@@ -1,0 +1,57 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Webservice extends CI_Controller {
+	
+
+	function __construct(){
+		parent::__construct();      
+		echo "hello";exit;
+		//$this -> load -> model('webservice_model', '', TRUE);
+               
+	}
+	function index(){		
+	echo "test";exit;
+		if($_REQUEST['action'] == 'memberLogin'){
+			$this->memberLogin();
+		}
+
+	}
+	function memberLogin(){
+		echo "asdf";exit;
+		$vEmail    = $this->input->get('vEmail');
+		$vPassword = $this->input->get('vPassword');
+		if(($vEmail != '') && ($vPassword != '')){
+			$loginCheck = $this->webservice_model->verify_login($vEmail,$vPassword);
+
+			if($loginCheck){
+
+			  $Data = $loginCheck;
+			  $Data['msg'] = "Login Succesfull";
+			}else{
+			  $Data['msg'] = "Error";
+			}
+		}else{
+			  $Data['msg'] = "Error";
+		}
+		header('Content-type: application/json');
+		$callback = '';
+		if (isset($_REQUEST['callback']))
+		{
+		    $callback = filter_var($_REQUEST['callback'], FILTER_SANITIZE_STRING);
+		}
+		$main = json_encode($Data);
+		echo $callback . '('.$main.')';
+		exit;
+	}
+
+	  
+	  
+	
+	
+	
+	
+	
+	
+
+}
+

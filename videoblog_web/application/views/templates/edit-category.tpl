@@ -1,0 +1,92 @@
+<script src="{$data.base_js}category.js"></script>
+<div class="row-fluid">
+    <div class="navbar">
+        <div class="navbar-inner">
+            {$data.breadcrumb}
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span12">
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">Categories</div>
+            </div>
+            <div class="block-content collapse in">
+				<form class="form-horizontal" id="frmcategory" action="{$data.base_url}category/update" method="post" enctype="multipart/form-data">
+					<input type="hidden" name="data[iCategoryId]" value="{$data.category.iCategoryId}">
+
+					<fieldset>
+						<legend>Edit Category</legend>
+						<div class="control-group">
+							<label class="control-label" for="typeahead">Category</label>
+							<div class="controls">
+								<input type="text" class="span3" id="vCategory" name="data[vCategory]" value="{$data.category.vCategory}">
+							</div>
+						</div>
+						<div class="control-group" id="image">
+							<label class="control-label" for="typeahead">Category Icon</label>
+							<div class="controls">
+								<input type="file" class="span10" id="vIcon" name="vIcon" value="{$data.category.vIcon}">
+							</div>
+							{if $data.category.vIcon neq ''}
+							<div class="controls">
+								<button class="btn btn-inverse" data-toggle="modal" data-target="#myModalpostvi">
+									View
+								</button>
+								<button class="btn btn-danger" data-toggle="modal" data-target="#myModaldelpostvi">
+									Delete
+								</button>
+							</div>
+							{/if}
+						</div>
+						<div class="control-group">
+							<label class="control-label" for="typeahead">Status</label>
+							<div class="controls">
+								<select class="input-large" name="data[eStatus]">
+									{section name=i loop=$eStatuses}
+									<option value="{$eStatuses[i]}" {if $eStatuses[i] eq $data.category.eStatus}selected="selected"{/if}>{$eStatuses[i]}</option>
+									{/section}
+								</select>
+							</div>
+						</div>
+						<div class="form-actions">
+							<button type="submit" id="btn-save" class="btn btn-primary" >Save changes</button>
+							<button type="button" class="btn" onclick="returnme();">Cancel</button>
+						</div>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="myModalpostvi" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myModalLabel">Icon</h4>
+			</div>
+			<div class="modal-body">
+				<img src="{$data.base_url}uploads/category_icons/{$data.category.iCategoryId}/{$data.category.vIcon}" />
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<div class="modal fade" id="myModaldelpostvi" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myModalLabel">Delete</h4>
+			</div>
+			<div class="modal-body">
+				Are you sure to delete the Icon?
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+				<a href="{$data.base_url}category/deleteicon?id={$data.category.iCategoryId}" class="btn btn-primary">Yes</a>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div>

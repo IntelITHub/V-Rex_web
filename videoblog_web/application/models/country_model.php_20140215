@@ -1,0 +1,35 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+
+class Country_model extends CI_Model 
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    #count all countries
+    function count_country()
+    {
+        return $this->db->count_all("country");
+    }
+
+    #get listing of countries
+    function get_country($limit,$start)
+    {
+        $this->db->select('');
+        $this->db->from('country');
+        $this->db->limit($limit, $start);
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+    
+     #update all
+    function get_update_all($ids,$action)
+    {
+        $data = array('eStatus' =>$action);
+        $this->db->where_in('iCountryId', $ids);
+        $this->db->update('country', $data); 
+        return $this->db->affected_rows();   
+    }
+}
+?>

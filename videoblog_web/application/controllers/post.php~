@@ -1,0 +1,303 @@
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+class Post extends MY_Controller
+{
+    
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('post_model', '', TRUE);
+        $this->load->library('upload');     
+    }    
+
+    function index()
+    {
+        $this->data['tpl_name']= "view-post.tpl";
+        $total_rows = $this->post_model->count_post();
+        $this->data['pagination']['base_url'] = $this->data['base_url'].'post';
+        $this->data['pagination']['total_rows'] = $total_rows;
+        $this->pagination->initialize($this->data['pagination']); 
+        $page = ($this->uri->segment(2)) ? $this->uri->segment(2) : 0;
+        $this->data['post']  =  $this->post_model->get_post($this->data['pagination']["per_page"],$page);
+        //echo "<pre>";print_r($this->data['post']);exit;
+        $this->data['create_links'] =  $this->pagination->create_links();
+        if($total_rows > 0)
+        {
+            if($page !=0){
+                $end = (($page+$this->data['pagination']['per_page'])/$this->data['pagination']['per_page'])*$this->data['pagination']['per_page'];
+                $start = $end - ( $this->data['pagination']['per_page'] -1 );
+                if($end > $total_rows)
+                    $end = $total_rows;            
+            }
+            else{
+                $end = $this->data['pagination']['per_page'];
+                if($end > $total_rows)
+                    $end = $total_rows;
+                $start = 1;
+            }
+            $this->data['paging_message']  = 'Showing Records '. $start.' to '. $end.' out of '.$total_rows;
+        }
+        else
+        {
+            $this->data['paging_message']  = 'No Records Found';
+        }
+        $this->data['message'] = $this->session->flashdata('message');
+
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Post', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->view('template.tpl'); 
+    }
+    
+    # add post 
+    function create()
+    {
+    	//get all dropdowns
+    	$all_members = get_array('member','iMemberId');
+    	$all_categories = get_array('categories','iCategoryId');
+    	$eFileTypes = field_enums('post','eFileType');
+    	$visiblities = field_enums('post','eVisiblity');
+    	$eStatuses = field_enums('post','eStatus');
+
+    	//if form is posted
+        if($this->input->post())
+        { 
+
+            $post = $this->input->post('data');
+            $post['dCreatedDate'] = date('Y-m-d H:i:s');
+            //echo '<pre>';print_r($post);exit;
+            $iPostId = $this->post_model->add_post($post);
+
+            if($_FILES['vVideo']['name']!='')
+                {
+		    $post['vVideo']=$_FILES['vVideo']['name'];
+                    $video_uploaded = $this->do_uploadvideo($iPostId);
+                    $post['vVideo'] = $video_uploaded;
+                    $post['iPostId'] = $iPostId;
+                    $iPostId = $this->post_model->edit_post($post);
+                }
+            $this->session->set_flashdata('message',"Post Added Successfully");
+            redirect($this->data['base_url'] . 'post');
+            exit;
+        }   
+
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Post', base_url()."post");
+        $this->breadcrumb->add('Add Post', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        # get all countries
+        $country = $this->post_model->get_country();
+        $this->data['country']=$country;
+
+        # get all states
+        $state= $this->post_model->get_allstates();
+        $this->data['all_state']=$state;
+
+        //load template file
+        $this->data['tpl_name']= "new-post.tpl";
+
+        //smarty assign variables
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->assign('all_members', $all_members);
+        $this->smarty->assign('all_categories', $all_categories);
+        $this->smarty->assign('eFileTypes', $eFileTypes);
+        $this->smarty->assign('visiblities', $visiblities);
+        $this->smarty->assign('eStatuses', $eStatuses);
+
+        $this->smarty->view('template.tpl'); 
+    }
+
+    # update post
+    function update()
+    {
+    	//get all dropdowns
+    	$all_members = get_array('member','iMemberId');
+    	$all_categories = get_array('categories','iCategoryId');
+    	$eFileTypes = field_enums('post','eFileType');
+    	$visiblities = field_enums('post','eVisiblity');
+    	$eStatuses = field_enums('post','eStatus');
+
+        $iPostId = $this->uri->segment(3);
+        $this->data['post'] = $this->post_model->get_post_details($iPostId);
+        $this->data['comment'] = $this->post_model->get_comment_details($iPostId);
+        $this->data['like'] = $this->post_model->get_like_details($iPostId);
+               
+        if($this->input->post())
+        {
+            $post = $this->input->post('data');
+            if(isset($_FILES) && $_FILES['vVideo']['name']!= "")
+                {
+                    $post['vVideo']=$_FILES['vVideo']['name'];
+                    $video_uploaded = $this->do_uploadvideo($post['iPostId']);
+                    $post['vVideo'] = $video_uploaded;
+                } 
+
+            $iPostId = $this->post_model->edit_post($post);
+            $this->session->set_flashdata('message',"Post Updated Successfully");
+            redirect($this->data['base_url'] . 'post');
+            exit;
+        }   
+   
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Post', base_url()."post");
+        $this->breadcrumb->add('Edit Post', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        # get all countries
+        $countries = $this->post_model->get_country();
+        $this->data['all_country']=$countries;
+
+        # get all states 
+        $state= $this->post_model->get_allstates();
+        $this->data['all_state']=$state;
+        
+        //load template file
+        $this->data['tpl_name']= "edit-post.tpl";
+
+        //smarty assign variables  
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->assign('all_members', $all_members);
+        $this->smarty->assign('all_categories', $all_categories);
+        $this->smarty->assign('eFileTypes', $eFileTypes);
+        $this->smarty->assign('visiblities', $visiblities);
+        $this->smarty->assign('eStatuses', $eStatuses);
+
+        $this->smarty->view('template.tpl'); 
+    }
+
+    #post private,public or delete
+    function action_update()
+    {  
+   
+        $ids = $this->input->post('iId');  
+        switch($this->input->post('action'))
+        {
+            case "Private":
+            case "Public":
+                    
+                    $iId = $this->post_model->get_update_all($ids,$this->input->post('action'));
+                    $this->session->set_flashdata('message',"Total ".count($ids)." Record(s) updated successfully");
+                    redirect($this->data['base_url'] . 'post');
+                    exit;
+                    break;
+            case "Delete":
+                    $upload_path = $this->config->item('base_path'); 
+                    foreach ($ids as $row) {
+                        $data= $this->post_model->get_post_details($row);
+                        unlink($upload_path.'uploads/'.'user/'.$row.'/'.$data['vVideo']);
+                        rmdir($upload_path.'uploads/'.'user/'.$row);
+                    }
+                    $iId = $this->post_model->delete_all($ids);
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record Deleted successfully");
+                    redirect($this->data['base_url'] . 'post');
+                    exit;
+                    break;
+        }
+    }
+    function action_update_comment()
+    {  
+        $ids = $this->input->post('iId');  
+       // print_r($ids);exit;
+        switch($this->input->post('action'))
+        {
+            case "Delete":
+                    $upload_path = $this->config->item('base_path'); 
+                    $iId = $this->post_model->delete_all_comment($ids);
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record Deleted successfully");
+                    redirect($this->data['base_url'] . 'post');
+                    exit;
+                    break;
+            case "Approve":
+                    $upload_path = $this->config->item('base_path'); 
+                    $iId = $this->post_model->approve_all_comment($ids);
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record Deleted successfully");
+                    redirect($this->data['base_url'] . 'post');
+                    exit;
+                    break;                    
+        }
+    }
+    function action_update_like()
+    {  
+        $ids = $this->input->post('iId');  
+        switch($this->input->post('action'))
+        {
+            case "Delete":
+                    $upload_path = $this->config->item('base_path'); 
+                    $iId = $this->post_model->delete_all_like($ids);
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record Deleted successfully");
+                    redirect($this->data['base_url'] . 'post');
+                    exit;
+                    break;
+        }
+    }
+    #get states by country
+    function get_all_states()
+    {
+        $iCountryId = $this->uri->segment(3);
+        $states = $this->post_model->get_states($iCountryId);
+        $options = '';
+        if(count($states) > 0)
+        {
+            for($i=0;$i<count($states);$i++)
+            {
+                $options .= '<option value="'.$states[$i]['iStateId'].'">'.$states[$i]['vState'].'</option>';
+            }    
+        }
+        else
+        {
+            $options .= '<option value="">-- Select State--</option>';
+        }
+        
+        $json_lang = json_encode($options);   
+        print $json_lang;
+        exit;
+     }
+
+    # For uploaded video
+    function do_uploadvideo($videoId)
+    {
+
+        if(!is_dir('uploads/post/')){
+            @mkdir('uploads/post/', 0777);
+        }
+        if(!is_dir('uploads/post/'.$videoId)){
+            @mkdir('uploads/post/'.$videoId, 0777);
+        }
+       
+        $config = array(
+          'allowed_types' => '3gp|MPG|mp4|avi|x-flv|wmv|mpg|3gpp|x-ms-wmv|mpeg|3gpp|MP4|flv|png|jpg|jpeg|gif',
+          'upload_path' => 'uploads/post/'.$videoId,
+          'file_name' => str_replace(' ','',$_FILES['vVideo']['name']),
+          'max_size'=>5380334
+        );
+        $this->upload->initialize($config);
+        $this->upload->do_upload('vVideo'); //do upload
+        $video_data = $this->upload->data(); //get video data
+        $video_uploaded = $video_data['file_name'];
+        // echo $video_uploaded ;exit;
+        return $video_uploaded;
+    }
+    
+    # for delete video
+     function deletevideo()
+    {
+        $upload_path = $this->config->item('base_path');  
+        $iPostId = $_REQUEST['id'];
+        $data = $this->post_model->get_post_details($iPostId);
+        $var=unlink($upload_path.'uploads/'.'user/'.$iPostId.'/'.$data['vVideo']);
+        $var1 = $this->post_model->delete_video($iPostId);
+        redirect($this->data['base_url'].'post/update/'.$iPostId);
+    }
+}
+/* End of file post.php */
+/* Location: ./application/controllers/post.php */
+?>

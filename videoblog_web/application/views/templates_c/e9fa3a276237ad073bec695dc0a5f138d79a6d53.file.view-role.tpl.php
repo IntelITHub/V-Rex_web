@@ -1,0 +1,83 @@
+<?php /* Smarty version Smarty-3.1.11, created on 2014-02-15 21:02:52
+         compiled from "application/views/templates/role/view-role.tpl" */ ?>
+<?php /*%%SmartyHeaderCode:190776928652ff738c999ea0-45923500%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+$_valid = $_smarty_tpl->decodeProperties(array (
+  'file_dependency' => 
+  array (
+    'e9fa3a276237ad073bec695dc0a5f138d79a6d53' => 
+    array (
+      0 => 'application/views/templates/role/view-role.tpl',
+      1 => 1392470348,
+      2 => 'file',
+    ),
+  ),
+  'nocache_hash' => '190776928652ff738c999ea0-45923500',
+  'function' => 
+  array (
+  ),
+  'variables' => 
+  array (
+    'data' => 0,
+  ),
+  'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.11',
+  'unifunc' => 'content_52ff738ca394f9_94405973',
+),false); /*/%%SmartyHeaderCode%%*/?>
+<?php if ($_valid && !is_callable('content_52ff738ca394f9_94405973')) {function content_52ff738ca394f9_94405973($_smarty_tpl) {?><script src="<?php echo $_smarty_tpl->tpl_vars['data']->value['base_js'];?>
+role.js"></script>
+<form name="frmlist" id="frmlist" action="<?php echo $_smarty_tpl->tpl_vars['data']->value['base_url'];?>
+role/action_update" method="post">
+<input type="hidden" name="action" id="action">
+<div class="row-fluid">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <?php echo $_smarty_tpl->tpl_vars['data']->value['breadcrumb'];?>
+
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span12">
+        <div class="block">
+            <div class="navbar navbar-inner block-header">
+                <div class="muted pull-left">Role</div>
+            </div>
+            <div class="block-content collapse in">
+                <?php if ($_smarty_tpl->tpl_vars['data']->value['message']!=''){?>
+                <div class="span12">
+                    <div class="alert alert-info">
+                        <?php echo $_smarty_tpl->tpl_vars['data']->value['message'];?>
+
+                    </div>
+                </div>
+                <?php }?>
+                <div class="row-fluid">
+                    <div class="span6">
+                        <div class="span6 ">
+                        </div>
+                    </div>
+                    <div class="span6">
+                        <div class="pull-right">
+                            <button type="submit" id="btn-active" class="btn btn-success bottom-buffer" onclick="check_all();" >Make Active</button>
+                            <button type="submit" id="btn-inactive" class="btn btn-info bottom-buffer">Make Inactive</button>
+                            <button type="button" id="btn-add" onclick="addme('<?php echo $_smarty_tpl->tpl_vars['data']->value['base_url'];?>
+role/create');"  class="btn btn-inverse bottom-buffer">Add New</button>
+                            <button type="submit" id="btn-delete" class="btn btn-danger bottom-buffer">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <table class="table  table-bordered table-striped" id="Roelid">
+                    <thead>
+                    <tr>
+                        <th width="3%"><input type="checkbox" id="check_all" name="check_all" value="1"></th>
+                        <th>Name</th>
+                        <th width="10%">Status</th>
+                        <th width="10%">Edit</th>
+                    </tr>
+                    </thead>
+                </table>  
+            </div>
+        </div>
+    </div>
+</div>           
+</form> <?php }} ?>

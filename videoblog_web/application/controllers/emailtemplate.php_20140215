@@ -1,0 +1,108 @@
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+class Emailtemplate extends MY_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('emailtemplate_model', '', TRUE);           
+	} 
+    
+    //email templated listing
+    function index(){
+
+        $total_rows = $this->emailtemplate_model->count_email();
+        $this->data['pagination']['base_url'] = $this->data['base_url'].'emailtemplate';
+        $this->data['pagination']['total_rows'] = $total_rows;
+        $this->pagination->initialize($this->data['pagination']); 
+        $page = ($this->uri->segment(2)) ? $this->uri->segment(2) : 0;
+        //echo "<pre>";print_r($this->data);exit;
+        $this->data['emailtemplate'] = $this->emailtemplate_model->get_emailtemplate($this->data['pagination']["per_page"],$page);
+        $this->data['create_links'] = $this->pagination->create_links();
+        if($total_rows > 0)
+        {
+            if($page !=0){
+                $end = (($page+$this->data['pagination']['per_page'])/$this->data['pagination']['per_page'])*$this->data['pagination']['per_page'];
+                $start = $end - ( $this->data['pagination']['per_page'] -1 );
+                if($end > $total_rows)
+                    $end = $total_rows;            
+            }
+            else{
+                $end = $this->data['pagination']['per_page'];
+                if($end > $total_rows)
+                    $end = $total_rows;
+                $start = 1;
+            }
+            $this->data['paging_message']  = 'Showing Records '. $start.' to '. $end.' out of '.$total_rows;
+        }
+        else
+        {
+            $this->data['paging_message']  = 'No Records Found';
+        }
+        $this->data['tpl_name']= "view-emailtemplate.tpl";        
+        $this->data['message'] = $this->session->flashdata('message');
+        $this->breadcrumb->add('Dashboard',  $this->data['base_url'].'home');
+        $this->breadcrumb->add('View Emailtemplate', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();        
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->view('template.tpl'); 
+    }
+
+    //email templated listing
+    function create(){
+        if($this->input->post()){
+            $emailtemplate = $this->input->post('data');
+            $iEmailTemplateId= $this->emailtemplate_model->add_emailtemplate($emailtemplate);
+            $this->session->set_flashdata('message',"Emailtemplate added successfully");
+            redirect($this->data['base_url'] . 'emailtemplate');
+            exit;
+        }   
+        $this->breadcrumb->add('Dashboard',  $this->data['base_url'].'home');
+        $this->breadcrumb->add('View Emailtemplate', $this->data['base_url']."emailtemplate");
+        $this->breadcrumb->add('Add Emailtemplate', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        $this->data['tpl_name']= "new-emailtemplate.tpl";	
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->view('template.tpl');
+    }
+
+    //update email template data.
+    function update(){
+        $eStatuses = field_enums('emailtemplate', 'eStatus');
+        $iEmailTemplateId= $this->uri->segment(3);
+        $this->data['emailtemplate'] = $this->emailtemplate_model->get_emailtemplate_details($iEmailTemplateId);
+        if($this->input->post()){
+            $emailtemplate = $this->input->post('data');
+            $emailtemplate['tEmailMessage']=$emailtemplate['tEmailMessage'];                        
+            $iEmailTemplateId= $this->emailtemplate_model->edit_emailtemplate($emailtemplate);
+            $this->session->set_flashdata('message',"Emailtemplate updated successfully");
+            redirect($this->data['base_url'] . 'emailtemplate');
+            exit;
+        }
+	    $this->breadcrumb->add('Dashboard', $this->data['base_url'].'home');
+        $this->breadcrumb->add('View Emailtemplate',$this->data['base_url']."emailtemplate");
+        $this->breadcrumb->add('Edit Emailtemplate', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        $this->data['tpl_name']= "edit-emailtemplate.tpl";  
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->assign('eStatuses', $eStatuses);
+        $this->smarty->view('template.tpl');
+    }
+    
+    //update template status
+    function action_update(){
+       $ids = $this->input->post('iId');
+        switch($this->input->post('action')){
+            case "Inactive":
+            case "Active":
+                    $iId = $this->emailtemplate_model->get_update_all($ids,$this->input->post('action'));
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record updated successfully");
+                    redirect($this->data['base_url'] . 'emailtemplate');
+                    exit;
+                    break;
+        }
+    }
+}
+/* End of file emailtemplate.php */
+/* Location: ./application/controllers/emailtemplate.php */
+?>

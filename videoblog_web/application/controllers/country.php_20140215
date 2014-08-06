@@ -1,0 +1,73 @@
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+class Country extends MY_Controller
+{
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('country_model', '', TRUE);
+    }    
+
+    function index()
+    {
+        $this->data['tpl_name']= "view-country.tpl";
+        $total_rows = $this->country_model->count_country();
+        $this->data['pagination']['base_url'] = $this->data['base_url'].'country';
+        $this->data['pagination']['total_rows'] = $total_rows;
+        $this->pagination->initialize($this->data['pagination']); 
+        $page = ($this->uri->segment(2)) ? $this->uri->segment(2) : 0;
+        $this->data['country']  =  $this->country_model->get_country($this->data['pagination']["per_page"],$page);
+        $this->data['create_links'] =  $this->pagination->create_links();
+        if($total_rows > 0)
+        {
+            if($page !=0){
+                $end = (($page+$this->data['pagination']['per_page'])/$this->data['pagination']['per_page'])*$this->data['pagination']['per_page'];
+                $start = $end - ( $this->data['pagination']['per_page'] -1 );
+                if($end > $total_rows)
+                    $end = $total_rows;            
+            }
+            else{
+                $end = $this->data['pagination']['per_page'];
+                if($end > $total_rows)
+                    $end = $total_rows;
+                $start = 1;
+            }
+            $this->data['paging_message']  = 'Showing Records '. $start.' to '. $end.' out of '.$total_rows;
+        }
+        else
+        {
+            $this->data['paging_message']  = 'No Records Found';
+        }
+        $this->data['message'] = $this->session->flashdata('message');
+        
+        
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Country', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->view('template.tpl'); 
+    }
+
+    function action_update()
+    {
+        
+        $ids = $this->input->post('iId');
+        switch($this->input->post('action'))
+        {
+            case "Inactive":
+            case "Active":
+                    $iId = $this->country_model->get_update_all($ids,$this->input->post('action'));
+                    $this->session->set_flashdata('message',"Total  (".count($ids).")s  Record updated successfully");
+                    redirect($this->data['base_url'] . 'country');
+                    exit;
+                    break;
+        }
+    }
+   
+}
+/* End of file Country.php */
+/* Location: ./application/controllers/Country.php */
+?>

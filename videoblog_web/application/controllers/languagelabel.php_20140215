@@ -1,0 +1,146 @@
+<?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+
+class Languagelabel extends MY_Controller
+{
+    
+    function __construct()
+    {
+        parent::__construct();
+        $this->load->model('languagelabel_model', '', TRUE);
+    }    
+
+    function index()
+    {
+        $this->data['tpl_name']= "view-languagelabel.tpl";
+        $total_rows = $this->languagelabel_model->count_languagelabel();
+        $this->data['pagination']['base_url'] = $this->data['base_url'].'languagelabel';
+        $this->data['pagination']['total_rows'] = $total_rows;
+        $this->pagination->initialize($this->data['pagination']); 
+        $page = ($this->uri->segment(2)) ? $this->uri->segment(2) : 0;
+        $this->data['languagelabel']  =  $this->languagelabel_model->get_languagelabel($this->data['pagination']["per_page"],$page);
+        $this->data['create_links'] =  $this->pagination->create_links();
+        if($total_rows > 0)
+        {
+            if($page !=0){
+                $end = (($page+$this->data['pagination']['per_page'])/$this->data['pagination']['per_page'])*$this->data['pagination']['per_page'];
+                $start = $end - ( $this->data['pagination']['per_page'] -1 );
+                if($end > $total_rows)
+                    $end = $total_rows;            
+            }
+            else{
+                $end = $this->data['pagination']['per_page'];
+                if($end > $total_rows)
+                    $end = $total_rows;
+                $start = 1;
+            }
+            $this->data['paging_message']  = 'Showing Records '. $start.' to '. $end.' out of '.$total_rows;
+        }
+        else
+        {
+            $this->data['paging_message']  = 'No Records Found';
+        }
+        $this->data['message'] = $this->session->flashdata('message');
+        
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Language Labels', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->view('template.tpl'); 
+    }
+
+    function create()
+    {
+        //get all dropdowns
+        $eStatuses = field_enums('lang_label','eStatus');
+
+        //if form is posted
+        if($this->input->post())
+        {
+            $languagelabel = $this->input->post('data');
+            $iLabelId = $this->languagelabel_model->add_languagelabel($languagelabel);
+            $this->session->set_flashdata('message',"Language Label Added Successfully");
+            redirect($this->data['base_url'] . 'languagelabel');
+            exit;
+        }   
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Language Labels', base_url()."languagelabel");
+        $this->breadcrumb->add('Add Language Label', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        //load template file
+        $this->data['tpl_name']= "new-languagelabel.tpl";	
+
+        //smarty assign variables
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->assign('eStatuses', $eStatuses);
+
+        $this->smarty->view('template.tpl'); 
+    }
+   
+    function update()
+    {
+        //get all dropdowns
+        $eStatuses = field_enums('lang_label','eStatus');
+
+        $iLabelId = $this->uri->segment(3);
+        $this->data['languagelabel'] = $this->languagelabel_model ->get_languagelabel_details($iLabelId);
+        //$this->data['language'] = $this->language_model ->get_language_details($iLabelId);
+
+        //if form is posted
+        if($this->input->post())
+        {
+            $languagelabel = $this->input->post('data');
+            $iLabelId = $this->languagelabel_model->edit_languagelabel($languagelabel);
+            $this->session->set_flashdata('message',"Language Label Updated Successfully");
+            redirect($this->data['base_url'] . 'languagelabel');
+            exit;
+        }   
+        //breadcrumb 
+        $this->breadcrumb->add('Dashboard', base_url());
+        $this->breadcrumb->add('View Language Labels', base_url()."languagelabel");
+        $this->breadcrumb->add('Edit Language Label', '');
+        $this->data['breadcrumb'] = $this->breadcrumb->output();
+        //ends
+
+        //load template file
+        $this->data['tpl_name']= "edit-languagelabel.tpl";
+
+        //smarty assign variables 
+        $this->smarty->assign('data', $this->data);
+        $this->smarty->assign('eStatuses', $eStatuses);
+
+        $this->smarty->view('template.tpl'); 
+
+    }
+
+    function action_update()
+    {
+        $ids = $this->input->post('iId');
+
+        switch($this->input->post('action'))
+        {
+            case "Inactive":
+            case "Active":
+                    $iId = $this->languagelabel_model->get_update_all($ids,$this->input->post('action'));
+                    $this->session->set_flashdata('message',"Total ".count($ids)." Record(s) updated successfully");
+                    redirect($this->data['base_url'] . 'languagelabel');
+                    exit;
+                    break;
+            case "Delete":
+                    $iId = $this->languagelabel_model->delete_all($ids);
+                    $this->session->set_flashdata('message',"Total ".count($ids)." Record(s) Deleted successfully");
+                    redirect($this->data['base_url'] . 'languagelabel');
+                    exit;
+                    break;
+        }
+    }
+}
+
+/* End of file languagelabel.php */
+/* Location: ./application/controllers/languagelabel.php */
+
+

@@ -1,0 +1,75 @@
+$(document).ready(function(){
+    $("#btn-save").click(function() {
+        
+        if($( "#vFirstName" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter First Name.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vLastName" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Last Name.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#iRoleId" ).val() ==''){
+            $(".modal-body").html( "<p>Please Select Role.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vEmail" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Email.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if(IsEmail($( "#vEmail" ).val())==false){
+            $(".modal-body").html( "<p>Please Enter Proper Email Address.</p>" );
+        	$("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vPassword" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Password.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vAddress" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Address.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vPhone" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Contact No.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#vCity" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter City.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+        if($( "#iCountryId" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter Country.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+         if($( "#vZipCode" ).val() ==''){
+            $(".modal-body").html( "<p>Please Enter ZipCode.</p>" );
+            $("#myalert").modal('show');
+            return false;
+        }
+
+    });
+     $( "#iCountryId" ).change(function() {
+        iCountryId = $('#iCountryId').val(); 
+        url = base_url+"user/get_all_states/"+iCountryId;
+          $.post(url,
+                function(data) {
+                    var lang_data = $.parseJSON(data);
+                    $('#iStateId').html(lang_data);                    
+                });
+    });
+});
+
+function returnme()
+{
+	window.location.href = base_url+'user';
+}
